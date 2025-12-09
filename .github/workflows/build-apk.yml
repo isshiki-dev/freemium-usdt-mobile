@@ -20,7 +20,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -32,7 +31,7 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Setup EAS
         uses: expo/expo-github-action@v8
@@ -40,11 +39,13 @@ jobs:
           eas-version: latest
           token: ${{ env.EXPO_TOKEN }}
 
-      - name: Create assets if missing
+      - name: Install Pillow for asset generation
+        run: pip install Pillow
+
+      - name: Create assets
         run: |
           mkdir -p assets
-          if [ ! -f assets/splash.png ]; then
-            python3 << 'EOF'
+          python3 << 'EOF'
           from PIL import Image, ImageDraw
           splash = Image.new('RGBA', (1284, 2778), (3, 7, 18, 255))
           draw = ImageDraw.Draw(splash)
@@ -64,7 +65,6 @@ jobs:
           icon.resize((200, 200)).save('assets/splash-icon.png')
           print("Assets created!")
           EOF
-          fi
 
       - name: Generate Keystore
         run: |
